@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <!-- bs4 css -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
+    <!-- vue -->
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+</head>
+<body>
+    <div id="app">
+        <div class="mainContiner p-15">
+            <div class="d-flex jc-end mb-15">
+                <button class="btn btn-primary" data-toggle="modal" data-target="#exampleModal" data-whatever="@getbootstrap" type="submit">新增產品</button>
+            </div>
+            <!-- title區域 -->
+            <hr>
+            <ul class="d-flex jc-around mb-15">
+                <li class="w-10">分類</li>
+                <li>產品名稱</li>
+                <li class="w-10">原價</li>
+                <li class="w-10">售價</li>
+                <li class="w-10">是否啟用</li>
+                <li class="w-20">編輯</li>
+            </ul>
+            <hr>
+            <!-- product list區域 -->
+            <ul v-for= "(item) in products" :key= "item.id" class="d-flex jc-around mb-15">
+                <li class="w-10">{{ item.category }}</li>
+                <li>{{ item.title }}</li>
+                <li class="w-10">{{ item.orgin_price }}</li>
+                <li class="w-10">{{ item.price }}</li>
+                <li class="w-10">
+                    <span v-if= "item.enable === true">啟用</span>
+                    <span v-else>未啟用</span>
+                </li>
+                <li class="w-20">
+                    <button @click= "updateProduct('get',item)" type="button" data-whatever="@getbootstrap" class="btn btn-outline-primary">編輯</button>
+                    <button @click= "updateProduct('delete',item)" type="button" class="btn btn-outline-danger">刪除</button>
+                </li>
+            </ul>
+        </div>
+        <!--add model -->
+        <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog bigModal">
+              <div class="modal-content">
+                <!-- model header -->
+                <div class="modal-header">
+                  <h5 class="modal-title" id="exampleModalLabel">新增商品</h5>
+                  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                  </button>
+                </div>
+                <!-- model body -->
+                <div class="modal-body">
+                  <form class="d-flex jc-between">
+                      <!-- model left area -->
+                    <div class="w-45 form-group">
+                        <div class="form-group">
+                            <label for="recipient-name" class="col-form-label">圖片網址</label>
+                            <input placeholder="請輸入圖片連結" type="text" class="form-control" id="recipient-name">
+                            <div class="d-flex">
+                                <div class="withoutImg p-15">
+                                    圖片預覽
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- model right area -->
+                    <div class="w-45 form-group">
+                        <!-- 標題輸入框 -->
+                        <div class="form-group">
+                          <label for="recipient-name" class="col-form-label">標題</label>
+                          <input v-model= "tempProduct.title" type="text" class="form-control" id="recipient-name" placeholder="請輸入標題">
+                        </div>
+                        <!-- 分類、單位輸入框 -->
+                        <div class="form-group d-flex jc-between">
+                            <div class="w-45 form-group">
+                                <label for="recipient-name" class="col-form-label">分類</label>
+                                <input v-model= "tempProduct.category" placeholder="請輸入分類" type="text" class="form-control" id="recipient-name">
+                            </div>
+                            <div class="w-45 form-group">
+                                <label for="recipient-name" class="col-form-label">單位</label>
+                                <input v-model= "tempProduct.unit" placeholder="請輸入單位" type="text" class="form-control" id="recipient-name">
+                            </div>
+                        </div>
+                        <!-- 原價、售價輸入框 -->
+                        <div class="form-group d-flex jc-between">
+                            <div class="w-45 form-group">
+                                <label for="recipient-name" class="col-form-label">原價</label>
+                                <input v-model= "tempProduct.orgin_price" placeholder="請輸入原價" type="text" class="form-control" id="recipient-name">
+                            </div>
+                            <div class="w-45 form-group">
+                                <label for="recipient-name" class="col-form-label">售價</label>
+                                <input v-model= "tempProduct.price" placeholder="請輸入售價" type="text" class="form-control" id="recipient-name">
+                            </div>
+                        </div>
+                        <!-- 產品描述 -->
+                        <div class="form-group">
+                          <label for="message-text" class="col-form-label">產品描述</label>
+                          <textarea v-model= "tempProduct.description" placeholder="請輸入產品描述" class="form-control" id="message-text"></textarea>
+                        </div>
+                        <!-- 說明內容 -->
+                        <div class="form-group">
+                            <label for="message-text" class="col-form-label">說明內容</label>
+                            <textarea v-model= "tempProduct.content" placeholder="請輸入說明內容" class="form-control" id="message-text"></textarea>
+                          </div>
+                    </div>
+                  </form>
+                </div>
+                <!-- model footer -->
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
+                  <button type="button" class="btn btn-primary" @click ="addNewProduct" data-dismiss="modal">確定新增</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        <!-- edit model -->
+        <div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog bigModal">
+              <div class="modal-content">
+                <!-- model header -->
+                <div class="modal-header">
+                  <h5 class="modal-title" id="exampleModalLabel">編輯商品</h5>
+                  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                  </button>
+                </div>
+                <!-- model body -->
+                <div class="modal-body">
+                  <form class="d-flex jc-between">
+                      <!-- model left area -->
+                    <div class="w-45 form-group">
+                        <div class="form-group">
+                            <label for="recipient-name" class="col-form-label">圖片網址</label>
+                            <input placeholder="請輸入圖片連結" type="text" class="form-control" id="recipient-name">
+                            <div class="d-flex">
+                                <div class="withoutImg p-15">
+                                    圖片預覽
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- model right area -->
+                    <div class="w-45 form-group">
+                        <!-- 標題輸入框 -->
+                        <div class="form-group">
+                          <label for="recipient-name" class="col-form-label">標題</label>
+                          <input v-model= "tempProduct.title" type="text" class="form-control" id="recipient-name" placeholder="請輸入標題">
+                        </div>
+                        <!-- 分類、單位輸入框 -->
+                        <div class="form-group d-flex jc-between">
+                            <div class="w-45 form-group">
+                                <label for="recipient-name" class="col-form-label">分類</label>
+                                <input v-model= "tempProduct.category" placeholder="請輸入分類" type="text" class="form-control" id="recipient-name">
+                            </div>
+                            <div class="w-45 form-group">
+                                <label for="recipient-name" class="col-form-label">單位</label>
+                                <input v-model= "tempProduct.unit" placeholder="請輸入單位" type="text" class="form-control" id="recipient-name">
+                            </div>
+                        </div>
+                        <!-- 原價、售價輸入框 -->
+                        <div class="form-group d-flex jc-between">
+                            <div class="w-45 form-group">
+                                <label for="recipient-name" class="col-form-label">原價</label>
+                                <input v-model= "tempProduct.orgin_price" placeholder="請輸入原價" type="text" class="form-control" id="recipient-name">
+                            </div>
+                            <div class="w-45 form-group">
+                                <label for="recipient-name" class="col-form-label">售價</label>
+                                <input v-model= "tempProduct.price" placeholder="請輸入售價" type="text" class="form-control" id="recipient-name">
+                            </div>
+                        </div>
+                        <!-- 產品描述 -->
+                        <div class="form-group">
+                          <label for="message-text" class="col-form-label">產品描述</label>
+                          <textarea v-model= "tempProduct.description" placeholder="請輸入產品描述" class="form-control" id="message-text"></textarea>
+                        </div>
+                        <!-- 說明內容 -->
+                        <div class="form-group">
+                            <label for="message-text" class="col-form-label">說明內容</label>
+                            <textarea v-model= "tempProduct.content" placeholder="請輸入說明內容" class="form-control" id="message-text"></textarea>
+                          </div>
+                    </div>
+                  </form>
+                </div>
+                <!-- model footer -->
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
+                  <button type="button" class="btn btn-primary" @click ="updateProduct('edit',item)" data-dismiss="modal">儲存修改</button>
+                </div>
+              </div>
+            </div>
+          </div>      
+    </div>
+    <script>
+        var app = new Vue({
+            el:"#app",
+            data:{
+                products:[
+                    {
+                       title: '潮流襯衫',
+                       category: '衣服',
+                       content: '好穿',
+                       description: '買一送一',
+                       imageUrl: '',
+                       enable: true,
+                       orgin_price: '200',
+                       price: '100',
+                       unit: '件',
+                       id: ''
+                    }
+                ],
+                tempProduct:{}
+            },
+            methods:{
+                updateProduct(isNew,item){
+                    switch (isNew){
+                        case 'new':
+                        // 這邊放新增產品function
+                        this.tempProduct = {};
+                        this.addNewProduct();
+                        break;
+                        case 'get':
+                        this.tempProduct = Object.assign({},item);
+                        console.log('取得單一產品資資料',this.tempProduct);
+                        $('#editModal').modal('show');
+                        break
+                        case 'edit':
+                        // 這邊放編輯產品function
+                        this.edit();
+                        console.log('編輯完成');
+                        break;
+                        case 'delete':
+                        // 這邊放刪除function
+                        this.tempProduct = Object.assign({}, item);
+                        // 淺層複製先準備好一份tmeProduct
+                        this.deletProduct();
+                        break;
+                    }           
+                },
+                edit(){
+                    const id = this.tempProduct.id;  //先取得當前產品id，避免下面判斷式取不到全域的tempProduct.id
+                    this.products.forEach((item, i) => {
+                        if(item.id === id){
+                            this.products[i] = this.tempProduct;
+                            // 符合判斷式則為目標物件，利用索引抓住他，把目前暫存的tmepProduct物件取代掉該成員
+                            console.log('編輯產品');
+                        }
+                    });
+                    this.tempProduct = {}; //清空tempProduct
+                },
+                addNewProduct(){
+                    // const dateTime = Date.now();
+                    // const timestamp = Math.floor(dateTime / 1000);
+                    const timestamp = new Date().getTime();  //更精簡
+                    this.tempProduct.id = timestamp;
+                    this.products.push(this.tempProduct);
+                    console.log(this.tempProduct.id);                 
+                },
+                deletProduct(){
+                    const id = this.tempProduct.id;  //先取得當前產品id，避免下面判斷式取不到全域的tempProduct.id
+                    this.products.forEach((item, i) => {
+                        if(item.id === id){
+                            this.products.splice( i, 1);
+                            this.tempProduct = {};
+                        }
+                    });
+                    console.log('刪除成功');
+                },
+            },
+            created(){
+            },
+
+        })
+    </script>
+</body>
+<style>
+    li{
+        list-style: none;
+    }
+    .mainContiner{
+        margin: 0 auto;
+        max-width: 1000px;
+    }
+    .d-flex{
+        display: flex;
+    }
+    .jc-end{
+        justify-content: flex-end;
+    }
+    .jc-around{
+        justify-content: space-around;
+    }
+    .jc-between{
+        justify-content: space-between;
+    }
+    .jc-center[
+        justify-content: center;
+    ]
+    .ai-center{
+        align-items: center;
+    }
+    .mb-15{
+        margin-bottom: 15px;
+    }
+    .w-10{
+        max-width: 10%;
+    }
+    .w-20{
+        max-width: 20%;
+    }
+    .w-45{
+        max-width: 45%;
+    }
+    .w-50{
+        max-width: 50%;
+    }
+    .w-100{
+        max-width: 100%;
+    }
+    .p-15{
+        padding: 15px;
+    }
+    .withoutImg{
+        font-size: 20px;
+        color: gray;
+        font-weight: bold;
+        margin: 0 auto;
+    }
+    .bigModal{
+        max-width: 700px;
+    }
+</style>
+<!-- bs4 js -->
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js" integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI" crossorigin="anonymous"></script>
+</html>
